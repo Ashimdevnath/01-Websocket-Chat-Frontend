@@ -3,22 +3,56 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, User, MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSignup } from "@/hooks/mutations/useSignup";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
-  const [name, setName] = useState("");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { mutateAsync: signup, isPending } = useSignup();
+
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only - no backend integration
-    console.log("Signup attempt:", { name, email, password });
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const res = await signup({
+        fullName,
+        email,
+        password,
+      });
+
+      toast({
+        title: "Signup Successful",
+        description: "Redirecting to chat...",
+      });
+
+      navigate("/chat");
+    } catch (err: any) {
+      toast({
+        title: "Signup Failed",
+        description: err?.message || "Something went wrong",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleGoogleSignup = () => {
-    // UI only - no backend integration
     console.log("Google signup attempt");
   };
 
@@ -32,23 +66,23 @@ const Signup = () => {
           <h1 className="text-4xl font-display font-bold text-foreground mb-2">
             Join Chat Nexus
           </h1>
-          <p className="text-muted-foreground">Create your account to get started</p>
+          <p className="text-muted-foreground">
+            Create your account to get started
+          </p>
         </div>
 
         <div className="bg-card rounded-2xl shadow-soft border border-border p-8">
           <form onSubmit={handleSignup} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium">
-                Full Name
-              </Label>
+              <Label htmlFor="name">Full Name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="name"
                   type="text"
                   placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   className="pl-10"
                   required
                 />
@@ -56,9 +90,7 @@ const Signup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
@@ -74,9 +106,7 @@ const Signup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Password
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
@@ -92,9 +122,7 @@ const Signup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm Password
-              </Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
@@ -111,9 +139,10 @@ const Signup = () => {
 
             <Button
               type="submit"
+              disabled={isPending}
               className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all"
             >
-              Create Account
+              {isPending ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
@@ -122,7 +151,9 @@ const Signup = () => {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-card text-muted-foreground">Or continue with</span>
+              <span className="px-4 bg-card text-muted-foreground">
+                Or continue with
+              </span>
             </div>
           </div>
 

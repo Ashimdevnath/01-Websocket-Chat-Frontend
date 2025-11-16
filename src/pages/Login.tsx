@@ -4,19 +4,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useLogin } from "@/hooks/mutations/useLogin";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { mutateAsync: login } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const loginMutation = useLogin();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only - no backend integration
-    console.log("Login attempt:", { email, password });
+
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: (data: any) => {
+          localStorage.setItem("token", data?.token);
+
+          toast({
+            title: "Login Successful",
+            description: "Redirecting to chat...",
+          });
+
+          navigate("/chat");
+        },
+        onError: (err: any) => {
+          toast({
+            title: "Login Failed",
+            description: err.message || "Invalid credentials",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   const handleGoogleLogin = () => {
-    // UI only - no backend integration
     console.log("Google login attempt");
   };
 
@@ -73,9 +100,10 @@ const Login = () => {
 
             <Button
               type="submit"
+              disabled={loginMutation.isPending}
               className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all"
             >
-              Sign In
+              {loginMutation.isPending ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
