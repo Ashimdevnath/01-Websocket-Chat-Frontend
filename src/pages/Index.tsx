@@ -14,7 +14,7 @@ const Index = () => {
           <h1 className="text-5xl md:text-7xl font-display font-bold text-foreground mb-6 leading-tight">
             Welcome to{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Chat Nexu
+              Chat Nexus
             </span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
@@ -36,6 +36,15 @@ const Index = () => {
                 className="h-14 px-8 text-lg font-semibold"
               >
                 Sign In
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 px-8 text-lg font-semibold"
+              >
+                Dashboard
               </Button>
             </Link>
           </div>
